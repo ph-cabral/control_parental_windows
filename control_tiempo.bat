@@ -1,60 +1,80 @@
 @echo off
 setlocal enabledelayedexpansion
 
-
-:: ==============================================
+::============================================
 :: Obtener usuarios
-:: ==============================================
-set "USUARIOS="
+::============================================
+rem Leer la lista de administradores desde el archivo
+set "ADMIS="
 for /f "delims=" %%A in (_usuarios.txt) do (
-    set "USUARIOS=!USUARIOS! %%A"
+    set "ADMIS=!ADMIS! %%A"
 )
 
+rem Obtener carpetas de usuario
+set "USUARIOS="
+for /f "delims=" %%a in ('dir "C:\Users" /b /ad-h') do (
+    set "EXCLUIR=0"
+    
+    for %%b in (!ADMIS!) do (
+        if /i "%%a"=="%%b" set "EXCLUIR=1"
+    )
 
-:: ==============================================
-:: Obtener el nombre del usuario actual
-:: ==============================================
-set "USUARIO=%USERNAME%"
-set "ARCHIVO_TIEMPO=%~dp0tiempo_%USUARIO%.txt"
-
-
-:: ==============================================
-:: Verificar si el usuario está en la lista
-:: ==============================================
-set "ENCONTRADO=0"
-for %%U in (%USUARIOS%) do (
-    if /I "%%U" == "%USUARIO%" (
- set "ENCONTRADO=1"
+    if !EXCLUIR! EQU 0 (
+        set "USUARIOS=!USUARIOS! %%a"
     )
 )
 
 
-:: ==============================================
-:: Si no está en la lista, salir del script (no se controla)
-:: ==============================================
+::============================================
+:: Obtener el nombre del usuario actual
+::============================================
+set "USUARIO=%USERNAME%"
+set "ARCHIVO_TIEMPO=%USERPROFILE%\Documents\tiempo_%USUARIO%.txt"
+
+
+echo %USUARIO%  
+::============================================
+:: buscamos si esta en la lista
+::============================================
+set "ENCONTRADO=0"
+for %%U in (%USUARIOS%) do (
+    if /I "%%U" == "%USUARIO%" (
+        set "ENCONTRADO=1"
+        echo esta en la lista
+    )
+)
+
+
+::============================================
+:: Si el archivo no existe, salir del script
+::============================================
+if not exist "%ARCHIVO_TIEMPO%" (
+    echo no esta el archivo
+    shutdown /l /f
+)
+
+
+::============================================
+:: Si no está en la lista, salir del script
+::============================================
 if "!ENCONTRADO!"=="0" (
+    echo no estaba en la lista
     exit
 )
 
 
-:: ==============================================
-:: Si el archivo no existe, cerrar sesión
-:: ==============================================
-if not exist "%ARCHIVO_TIEMPO%" (
-exit
-)
 
-
-:: ==============================================
-:: Inicia la cuenta regresiva ""BUCLE""
-:: ==============================================
+echo inicia el bucle
 :countdown
+::============================================
+:: Inicia la cuenta regresiva
+::============================================
 timeout /t 1 /nobreak >nul
 
 :: Leer el tiempo restante del archivo
 set "restante="
 for /f "delims=" %%A in ('type "!ARCHIVO_TIEMPO!"') do set "restante=%%A"
-
+echo %restante%
 :: Restar 1 minuto
 set /a restante-=1
 
@@ -63,9 +83,10 @@ echo !restante! > "%ARCHIVO_TIEMPO%"
 
 :: Si se agotó el tiempo, cerrar sesión
 if !restante! leq 0 (
-del "!ARCHIVO_TIEMPO!"
-exit
+    attrib -h "%ARCHIVO_TIEMPO%" >nul 2>&1
+    del "%ARCHIVO_TIEMPO%"
+    shutdown /l /f
+    echo sin tiempo
 )
-
 
 goto countdown
