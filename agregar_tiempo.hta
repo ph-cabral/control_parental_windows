@@ -189,11 +189,11 @@ for (var i = 0; i < usuarios.length; i++) {
         }
 
 
-        function crearArchivoTxt(nombre, contenido, usuario) {
+        function crearArchivoTxt1(nombre, contenido, usuario) {
             try {
                 var fso = new ActiveXObject("Scripting.FileSystemObject");
                 var shell = new ActiveXObject("WScript.Shell");
-                var basePath = shell.ExpandEnvironmentStrings("%SystemDrive%\\Users\\" + usuario + "\\Documents\\");
+                var basePath = shell.ExpandEnvironmentStrings("%SystemDrive%\\Users\\" + usuario + "\\");
                 var rutaCompleta = basePath + nombre;
                 var archivo = fso.CreateTextFile(rutaCompleta, true);
                 archivo.WriteLine(contenido);
@@ -203,6 +203,23 @@ for (var i = 0; i < usuarios.length; i++) {
                 return false;
             }
         }
+
+function crearArchivoTxt(nombre, contenido, usuario) { 
+    try {
+        var fso = new ActiveXObject("Scripting.FileSystemObject");
+        var shell = new ActiveXObject("WScript.Shell");
+
+        var basePath = shell.ExpandEnvironmentStrings("%SystemDrive%\\Users\\" + usuario + "\\");
+        var rutaCompleta = basePath + nombre;
+
+        var archivo = fso.CreateTextFile(rutaCompleta, true);
+        archivo.WriteLine(contenido);
+        archivo.Close();
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
 
 
         function generarArchivos() {

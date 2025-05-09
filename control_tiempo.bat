@@ -29,7 +29,7 @@ for /f "delims=" %%a in ('dir "C:\Users" /b /ad-h') do (
 :: Obtener el nombre del usuario actual
 ::============================================
 set "USUARIO=%USERNAME%"
-set "ARCHIVO_TIEMPO=%USERPROFILE%\Documents\tiempo_%USUARIO%.txt"
+set "ARCHIVO_TIEMPO=%USERPROFILE%\tiempo_%USUARIO%.txt"
 
 
 echo %USUARIO%  
