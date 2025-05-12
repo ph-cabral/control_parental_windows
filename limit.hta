@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Asignar Tiempo</title>
+    <HTA:APPLICATION ID="GeneradorApp" APPLICATIONNAME="Asignar Tiempo" BORDER="thin" BORDERSTYLE="normal" CAPTION="yes"
+        ICON="" MAXIMIZEBUTTON="yes" MINIMIZEBUTTON="yes" SHOWINTASKBAR="yes" SINGLEINSTANCE="yes" SYSMENU="yes"
+        VERSION="1.0" WINDOWSTATE="normal" />
+
+    <style>
+        body {
+            background-color: rgb(255, 200, 200);
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        input[type="number"],
+        input[type="password"] {
+            width: 100px;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        hr {
+            color: #4CAF50;
+
+            padding: 10px 15px;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .add {
+            background-color: #4CAF50;
+            box-sizing: border-box;
+            border: none;
+            font-weight: bolder;
+            font-size: 16px;
+            height: fit-content;
+            width: fit-content;
+        }
+
+        .add:hover {
+            background-color: #45a049;
+            cursor: pointer;
+        }
+
+        .del {
+            background-color: rgb(204, 81, 81);
+            box-sizing: border-box;
+            border: none;
+            font-weight: bolder;
+            font-size: 16px;
+            height: fit-content;
+            width: fit-content;
+        }
+
+        .del:hover {
+            background-color: rgb(172, 62, 62);
+            cursor: pointer;
+        }
+    </style>
+
+
+
+
+    <script language="JScript">
+
+        function obtenerUsuariosNoAdmin() {
+            var fso = new ActiveXObject("Scripting.FileSystemObject");
+            var adminList = [];
+            var adminFile = "_usuarios.txt";
+            if (fso.FileExists(adminFile)) {
+                var file = fso.OpenTextFile(adminFile, 1);
+                while (!file.AtEndOfStream) {
+                    var linea = file.ReadLine().replace(/^\s+|\s+$/g, "").toLowerCase();
+                    if (linea !== "") adminList.push(linea);
+                }
+                file.Close();
+            }
+            var usuarios = [];
+            var carpeta = fso.GetFolder("C:\\Users");
+            var subcarpetas = new Enumerator(carpeta.SubFolders);
+            for (; !subcarpetas.atEnd(); subcarpetas.moveNext()) {
+                var nombre = fso.GetFileName(subcarpetas.item().Path);
+                var attrs = subcarpetas.item().Attributes;
+                var esOculta = (attrs & 2); // 2 = oculto
+                if (esOculta) continue;
+                var esAdmin = false;
+                for (var i = 0; i < adminList.length; i++) {
+                    if (adminList[i] === nombre.toLowerCase()) {
+                        esAdmin = true;
+                        break;
+                    }
+                }
+                if (!esAdmin) usuarios.push(nombre);
+            }
+            return usuarios;
+        }
+
+
+        function construirTablaUsuarios() {
+            try {
+                var usuarios = obtenerUsuariosNoAdmin();
+                if (!usuarios || usuarios.length === 0) {
+                    alert("No hay usuarios disponibles.");
+                    window.close();
+                    return;
+                }
+                var tabla = document.getElementById("usuariosBody");
+                var contador = 1;
+                for (var i = 0; i < usuarios.length; i++) {
+                    var usuario = usuarios[i];
+                    var fila = document.createElement("tr");
+                    var celdaNombre = document.createElement("td");
+                    celdaNombre.innerText = usuario;
+                    var celdaInput = document.createElement("td");
+                    var input = document.createElement("input");
+                    input.type = "number";
+                    input.id = "value" + contador;
+                    celdaInput.appendChild(input);
+                    fila.appendChild(celdaNombre);
+                    fila.appendChild(celdaInput);
+                    tabla.appendChild(fila);
+                    contador++;
+                }
+            } catch (e) {
+                alert("Error al generar la tabla: " + e.message);
+            }
+        }
+
+
+        function leerClave() {
+            try {
+                var fso = new ActiveXObject("Scripting.FileSystemObject");
+                var archivo = fso.OpenTextFile("_clave.txt", 1);
+                var clave = archivo.ReadLine();
+                archivo.Close();
+                return clave;
+            } catch (e) {
+                alert("Error al leer el archivo de clave.");
+                return null;
+            }
+        }
+
+
+        function validarClave() {
+            var clave = document.getElementById("clave").value;
+            var claveCorrecta = leerClave();
+
+            if (document.getElementById("password").style.display === "block") {
+                if (claveCorrecta && document.getElementById("clave1").value === claveCorrecta) {
+                    guardarClave()
+                } else {
+                    alert("clave incorrecta")
+                }
+            } else if (document.getElementById("login").style.display === "block") {
+                if (claveCorrecta && clave === claveCorrecta) {
+                    cargarUsuarios();
+
+                } else {
+                    window.close();
+                }
+            }
+        }
+
+
+        function cargarUsuarios() {
+            try {
+                var fso = new ActiveXObject("Scripting.FileSystemObject");
+                if (!fso.FileExists("_usuarios.txt")) {
+                    alert("no existe el archivo _usuarios.txt");
+                    window.close();
+                }
+                var linea = obtenerUsuariosNoAdmin();
+                var usuarios = String(linea).split(",");
+                var tabla = document.getElementById("usuariosBody");
+                var contador = 1;
+                for (var i = 0; i < usuarios.length; i++) {
+                    var usuario = usuarios[i].replace(/^\s+|\s+$/g, "");
+                    if (usuario !== "") {
+                        var fila = document.createElement("tr");
+                        var celdaNombre = document.createElement("td");
+                        celdaNombre.innerText = usuario;
+                        var celdaInput = document.createElement("td");
+                        var input = document.createElement("input");
+                        input.type = "number";
+                        input.id = "value" + contador;
+                        celdaInput.appendChild(input);
+                        fila.appendChild(celdaNombre);
+                        fila.appendChild(celdaInput);
+                        tabla.appendChild(fila);
+                        contador++;
+                    }
+                }
+            } catch (e) {
+                alert("Error al leer _usuarios.txt: " + e.message);
+            }
+        }
+
+
+        function crearArchivoTxt(nombre, contenido, usuario) {
+            try {
+                var fso = new ActiveXObject("Scripting.FileSystemObject");
+                var shell = new ActiveXObject("WScript.Shell");
+                var basePath = shell.ExpandEnvironmentStrings("%SystemDrive%\\Users\\" + usuario + "\\");
+                var rutaCompleta = basePath + nombre;
+                var archivo = fso.CreateTextFile(rutaCompleta, true);
+                archivo.WriteLine(contenido);
+                archivo.Close();
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+
+        function generarArchivos() {
+            var tabla = document.getElementById('dataTable');
+            var filas = tabla.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+            var archivosCreados = 0;
+            for (var i = 0; i < filas.length; i++) {
+                var nombre = filas[i].cells[0].innerText.replace(/^\s+|\s+$/g, '');
+                var input = filas[i].cells[1].getElementsByTagName('input')[0]; var
+                    valor = parseFloat(input.value); if (!isNaN(valor) && valor > 0) {
+                        if (crearArchivoTxt("tiempo_" + nombre + ".txt", valor, nombre)) {
+                            archivosCreados++;
+                        }
+                    }
+            }
+        }
+
+
+        function cargarUsuariosLibres() {
+            try {
+                var fso = new ActiveXObject("Scripting.FileSystemObject");
+                if (!fso.FileExists("_usuarios.txt")) {
+                    alert("El archivo usuarios.txt no se encuentra.");
+                    return;
+                }
+                var archivo = fso.OpenTextFile("_usuarios.txt", 1); // 1 = lectura
+                var tabla = document.getElementById("usuariosLibresBody");
+                var contador = 1;
+                while (!archivo.AtEndOfStream) {
+                    var usuario = archivo.ReadLine().replace(/^\s+|\s+$/g, "");
+                    if (usuario !== "") {
+                        var fila = document.createElement("tr");
+                        var celdaNombre = document.createElement("td");
+                        celdaNombre.innerText = usuario;
+                        var celdaEliminar = document.createElement("td");
+                        var eliminar = document.createElement("div");
+                        eliminar.className = "del";
+                        eliminar.setAttribute("role", "button");
+                        eliminar.setAttribute("tabindex", "0");
+                        eliminar.innerHTML = "Quitar";
+                        celdaEliminar.appendChild(eliminar);
+                        eliminar.onclick = function () {
+                            var fila = this.parentNode.parentNode;
+                            if (fila) {
+                                var nombreUsuario = fila.cells[0].innerText.replace(/^\s+|\s+$/g, "");
+                                eliminarUsuarioDeArchivo(nombreUsuario);
+                                fila.removeNode(true);
+                            }
+                        };
+                        fila.appendChild(celdaNombre);
+                        fila.appendChild(celdaEliminar);
+                        tabla.appendChild(fila);
+
+                        contador++;
+                    }
+                }
+                archivo.Close();
+            } catch (e) {
+                alert("Error al leer usuarios.txt: " + e.message);
+            }
+        }
+
+
+        function eliminarUsuarioDeArchivo(nombreUsuario) {
+            try {
+                var fso = new ActiveXObject("Scripting.FileSystemObject");
+                var archivoPath = "_usuarios.txt";
+                if (!fso.FileExists(archivoPath)) {
+                    alert("El archivo no existe.");
+                    return;
+                }
+                var archivo = fso.OpenTextFile(archivoPath, 1);
+                var lineas = [];
+                while (!archivo.AtEndOfStream) {
+                    var linea = archivo.ReadLine();
+                    if (linea.replace(/^\s+|\s+$/g, "") !== nombreUsuario) {
+                        lineas.push(linea);
+                    }
+                }
+                archivo.Close();
+                var archivoNuevo = fso.CreateTextFile(archivoPath, true);
+                for (var i = 0; i < lineas.length; i++) {
+                    archivoNuevo.WriteLine(lineas[i]);
+                }
+                archivoNuevo.Close();
+            } catch (e) {
+                alert("Error al eliminar del archivo: " + e.message);
+            }
+        }
+
+
+
+
+        function agregarUsuario1() {
+            var nuevoUsuario = document.getElementById("new_user").value.replace(/^\s+|\s+$/g, '');
+            if (nuevoUsuario === "") {
+                alert("Ingrese un nombre válido.");
+                return;
+            }
+
+            try {
+                var fso = new ActiveXObject("Scripting.FileSystemObject");
+                var archivoRuta = "_usuarios.txt";
+
+                // Leer contenido actual
+                var contenido = "";
+                var usuarios = [];
+
+                if (fso.FileExists(archivoRuta)) {
+                    var archivoLectura = fso.OpenTextFile(archivoRuta, 1); // 1 = lectura
+                    contenido = archivoLectura.ReadAll();
+                    archivoLectura.Close();
+
+                    var lineas = contenido.split(/\r?\n/);
+                    for (var i = 0; i < lineas.length; i++) {
+                        var linea = lineas[i].replace(/^\s+|\s+$/g, '').toLowerCase();
+                        if (linea !== "") {
+                            usuarios.push(linea);
+                        }
+                    }
+                }
+
+                // Verificar duplicado
+                var yaExiste = false;
+                var nuevoUsuarioLower = nuevoUsuario.toLowerCase();
+                for (var j = 0; j < usuarios.length; j++) {
+                    if (usuarios[j] === nuevoUsuarioLower) {
+                        yaExiste = true;
+                        break;
+                    }
+                }
+
+                if (yaExiste) {
+                    alert("El usuario ya se encuentra con control activo.");
+                    return;
+                }
+
+                // Agregar al archivo
+                var archivo = fso.OpenTextFile(archivoRuta, 8, true); // 8 = append
+                if (contenido.length > 0 && !contenido.match(/[\r\n]$/)) {
+                    archivo.Write("\r\n");
+                }
+                archivo.Write(nuevoUsuario + "\r\n");
+                archivo.Close();
+
+            } catch (e) {
+                alert("Error al agregar usuario: " + e.message);
+            }
+        }
+
+
+
+        function agregarUsuario() {
+            var nuevoUsuario = document.getElementById("new_user").value.replace(/^\s+|\s+$/g, '');
+            if (nuevoUsuario === "") {
+                alert("Ingrese un nombre válido.");
+                return;
+            }
+
+            try {
+                var shell = new ActiveXObject("WScript.Shell");
+                var fso = new ActiveXObject("Scripting.FileSystemObject");
+                var archivoRuta = "_usuarios.txt";
+                var archivoCompleto = fso.GetAbsolutePathName(archivoRuta);
+
+                // 🔓 Quitar protección para editar
+                shell.Run('cmd /c icacls "' + archivoCompleto + '" /remove:d Users', 0, true);
+
+                // Leer contenido actual
+                var contenido = "";
+                var usuarios = [];
+
+                if (fso.FileExists(archivoRuta)) {
+                    var archivoLectura = fso.OpenTextFile(archivoRuta, 1); // 1 = lectura
+                    contenido = archivoLectura.ReadAll();
+                    archivoLectura.Close();
+
+                    var lineas = contenido.split(/\r?\n/);
+                    for (var i = 0; i < lineas.length; i++) {
+                        var linea = lineas[i].replace(/^\s+|\s+$/g, '').toLowerCase();
+                        if (linea !== "") {
+                            usuarios.push(linea);
+                        }
+                    }
+                }
+
+                // Verificar duplicado
+                var yaExiste = false;
+                var nuevoUsuarioLower = nuevoUsuario.toLowerCase();
+                for (var j = 0; j < usuarios.length; j++) {
+                    if (usuarios[j] === nuevoUsuarioLower) {
+                        alert("El usuario ya se encuentra con control activo.");
+
+                        // 🔒 Reproteger el archivo antes de salir
+                        shell.Run('cmd /c icacls "' + archivoCompleto + '" /inheritance:r /grant:r Administrators:F /deny Users:D', 0, true);
+                        return;
+                    }
+                }
+
+                // Agregar al archivo
+                var archivo = fso.OpenTextFile(archivoRuta, 8, true); // 8 = append
+                if (contenido.length > 0 && !contenido.match(/[\r\n]$/)) {
+                    archivo.Write("\r\n");
+                }
+                archivo.Write(nuevoUsuario + "\r\n");
+                archivo.Close();
+
+                // 🔒 Reproteger archivo
+                shell.Run('cmd /c icacls "' + archivoCompleto + '" /inheritance:r /grant:r Administrators:F /deny Users:D', 0, true);
+
+            } catch (e) {
+                alert("Error al agregar usuario: " + e.message);
+            }
+        }
+
+
+
+        function agregar() {
+            document.getElementById("add_user").style.display = "block";
+            document.getElementById("add_time").style.display = "none";
+            var tabla = document.getElementById("dataTable2");
+            while (tabla.rows.length > 1) {
+                tabla.deleteRow(1); // deja la cabecera intacta (índice 0)
+            }
+            cargarUsuariosLibres()
+            document.getElementById('new_user').value = "";
+            document.getElementById('new_user').focus();
+        }
+
+
+        function guardarClave() {
+            try {
+                var clave = document.getElementById("clave2").value;
+                var fso = new ActiveXObject("Scripting.FileSystemObject");
+                var archivoRuta = "_clave.txt";
+                var archivo = fso.OpenTextFile(archivoRuta, 2, true); // 2 = escritura, true = crear si no existe
+                archivo.Write(clave);
+                archivo.Close();
+            } catch (e) {
+                alert("Error al guardar la clave: " + e.message);
+            }
+        }
+
+
+        document.onkeypress = function (e) {
+            e = e || window.event;
+            var key = e.keyCode || e.which;
+            if (key === 27) { // Escape
+                if (document.getElementById("add_user").style.display === "block") {
+                    document.getElementById("add_time").style.display = "block";
+                    document.getElementById("add_user").style.display = "none";
+                    var tabla = document.getElementById("dataTable");
+                    while (tabla.rows.length > 1) {
+                        tabla.deleteRow(1);
+                    }
+                    cargarUsuarios();
+                } else if (document.getElementById("password").style.display === "block") {
+                        document.getElementById("add_time").style.display = "block";
+                        document.getElementById("password").style.display = "none";
+                } else {
+                    window.close();
+                }
+            }
+            if (key === 13) { // Enter
+                if (document.getElementById("login").style.display === "block") {
+                    validarClave();
+                    document.getElementById("add_time").style.display = "block";
+                    document.getElementById("login").style.display = "none";
+                    var tabla = document.getElementById("dataTable");
+                    var filas = tabla.getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+                    var altura = 370 + (filas * 50);
+                    var ancho = 400;
+                    window.resizeTo(ancho, altura);
+                } else if (document.getElementById("add_time").style.display === "block") {
+                    generarArchivos();
+                    window.close();
+                } else if (document.getElementById("add_user").style.display === "block") {
+                    agregarUsuario()
+                    var tabla = document.getElementById("dataTable");
+                    while (tabla.rows.length > 1) {
+                        tabla.deleteRow(1);
+                    }
+                    cargarUsuarios();
+                    document.getElementById("add_time").style.display = "block";
+                    document.getElementById("add_user").style.display = "none";
+                } else if (document.getElementById("password").style.display === "block") {
+                    validarClave();
+                    document.getElementById("add_time").style.display = "block";
+                    document.getElementById("password").style.display = "none";
+                }
+            }
+        };
+        function cambiarClave() {
+            document.getElementById("password").style.display = "block";
+            document.getElementById("add_time").style.display = "none";
+
+        }
+
+        window.onload = function () {
+            obtenerUsuariosNoAdmin()
+            document.getElementById('clave').focus();
+            if (document.getElementById("add")) {
+                document.getElementById("add").onclick = agregar;
+            }
+            if (document.getElementById("pass")) {
+                document.getElementById("pass").onclick = cambiarClave
+            }
+            window.resizeTo(350, 350);
+        };
+
+    </script>
+</head>
+
+<body>
+
+    <!-- Login -->
+    <div id="login" class="container" style="display:block;">
+        <h2>Ingresar Clave</h2>
+        <hr />
+        <input type="password" id="clave" placeholder="Contraseña" autofocus />
+        <hr />
+        <h3>Presione Enter para acceder</h3>
+        <h3>Escape para salir</h3>
+    </div>
+
+    <!-- AGREGAR TIEMPO -->
+
+    <div id="add_time" class="container" style="display:none;">
+        <div>
+            <h2>Asignar Tiempo</h2>
+            <div class="add" id="add" role="button" tabindex="0">Agregar Usuario sin control</div>
+
+        </div>
+        <hr />
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Minutos</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="usuariosBody">
+            </tbody>
+        </table>
+        <hr />
+        <div class="del" id="pass" role="button" tabindex="0">Cambiar Clave</div>
+        <h3>Presione Enter</h3>
+        <h3>Escape para salir sin agregar tiempo</h3>
+
+
+    </div>
+
+    <!-- AGREGAR USUARIO -->
+
+    <div id="add_user" class="container" style="display:none;">
+        <h2>Ingresar Nuevo Usuario</h2>
+        <hr />
+        <input type="text" id="new_user" autofocus />
+        <hr />
+        <table id="dataTable2">
+            <h3>Usuarios sin control</h3>
+            <hr />
+            <thead>
+                <tr>
+                    <th></th>
+
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="usuariosLibresBody">
+            </tbody>
+        </table>
+        <hr />
+        <h3>Enter para agregar</h3>
+        <h3>Escape para voler</h3>
+    </div>
+
+    <!-- CAMBIAR CLAVE -->
+
+    <div id="password" class="container" style="display:none;">
+        <h2>Ingresar Clave Actual</h2>
+        <input type="password" id="clave1" placeholder="Contraseña" autofocus />
+        <hr />
+        <h2>Ingresar Nueva Clave</h2>
+        <input type="password" id="clave2" placeholder="Contraseña" />
+        <hr />
+        <h3>Presione Enter para camabiar</h3>
+        <h3>Escape para salir</h3>
+    </div>
+
+</body>
+
+</html>

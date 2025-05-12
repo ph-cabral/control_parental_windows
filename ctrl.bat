@@ -10,6 +10,7 @@ for /f "delims=" %%A in (_usuarios.txt) do (
     set "ADMIS=!ADMIS! %%A"
 )
 
+
 rem Obtener carpetas de usuario
 set "USUARIOS="
 for /f "delims=" %%a in ('dir "C:\Users" /b /ad-h') do (
@@ -46,6 +47,15 @@ for %%U in (%USUARIOS%) do (
 
 
 ::============================================
+:: Si no está en la lista, salir del script
+::============================================
+if "!ENCONTRADO!"=="0" (
+    echo no estaba en la lista
+    exit
+)
+
+
+::============================================
 :: Si el archivo no existe, salir del script
 ::============================================
 if not exist "%ARCHIVO_TIEMPO%" (
@@ -54,13 +64,6 @@ if not exist "%ARCHIVO_TIEMPO%" (
 )
 
 
-::============================================
-:: Si no está en la lista, salir del script
-::============================================
-if "!ENCONTRADO!"=="0" (
-    echo no estaba en la lista
-    exit
-)
 
 
 
