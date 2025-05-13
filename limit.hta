@@ -82,7 +82,7 @@
         function obtenerUsuariosNoAdmin() {
             var fso = new ActiveXObject("Scripting.FileSystemObject");
             var adminList = [];
-            var adminFile = "_usuarios.txt";
+            var adminFile = "_us.txt";
             if (fso.FileExists(adminFile)) {
                 var file = fso.OpenTextFile(adminFile, 1);
                 while (!file.AtEndOfStream) {
@@ -146,7 +146,7 @@
         function leerClave() {
             try {
                 var fso = new ActiveXObject("Scripting.FileSystemObject");
-                var archivo = fso.OpenTextFile("_clave.txt", 1);
+                var archivo = fso.OpenTextFile("_cl.txt", 1);
                 var clave = archivo.ReadLine();
                 archivo.Close();
                 return clave;
@@ -181,8 +181,8 @@
         function cargarUsuarios() {
             try {
                 var fso = new ActiveXObject("Scripting.FileSystemObject");
-                if (!fso.FileExists("_usuarios.txt")) {
-                    alert("no existe el archivo _usuarios.txt");
+                if (!fso.FileExists("_us.txt")) {
+                    alert("no existe el archivo _us.txt");
                     window.close();
                 }
                 var linea = obtenerUsuariosNoAdmin();
@@ -207,7 +207,7 @@
                     }
                 }
             } catch (e) {
-                alert("Error al leer _usuarios.txt: " + e.message);
+                alert("Error al leer _us.txt: " + e.message);
             }
         }
 
@@ -247,11 +247,11 @@
         function cargarUsuariosLibres() {
             try {
                 var fso = new ActiveXObject("Scripting.FileSystemObject");
-                if (!fso.FileExists("_usuarios.txt")) {
-                    alert("El archivo usuarios.txt no se encuentra.");
+                if (!fso.FileExists("_us.txt")) {
+                    alert("El archivo _us.txt no se encuentra.");
                     return;
                 }
-                var archivo = fso.OpenTextFile("_usuarios.txt", 1); // 1 = lectura
+                var archivo = fso.OpenTextFile("_us.txt", 1); // 1 = lectura
                 var tabla = document.getElementById("usuariosLibresBody");
                 var contador = 1;
                 while (!archivo.AtEndOfStream) {
@@ -284,7 +284,7 @@
                 }
                 archivo.Close();
             } catch (e) {
-                alert("Error al leer usuarios.txt: " + e.message);
+                alert("Error al leer _us.txt: " + e.message);
             }
         }
 
@@ -292,7 +292,7 @@
         function eliminarUsuarioDeArchivo(nombreUsuario) {
             try {
                 var fso = new ActiveXObject("Scripting.FileSystemObject");
-                var archivoPath = "_usuarios.txt";
+                var archivoPath = "_us.txt";
                 if (!fso.FileExists(archivoPath)) {
                     alert("El archivo no existe.");
                     return;
@@ -328,7 +328,7 @@
 
             try {
                 var fso = new ActiveXObject("Scripting.FileSystemObject");
-                var archivoRuta = "_usuarios.txt";
+                var archivoRuta = "_us.txt";
 
                 // Leer contenido actual
                 var contenido = "";
@@ -388,7 +388,7 @@
             try {
                 var shell = new ActiveXObject("WScript.Shell");
                 var fso = new ActiveXObject("Scripting.FileSystemObject");
-                var archivoRuta = "_usuarios.txt";
+                var archivoRuta = "_us.txt";
                 var archivoCompleto = fso.GetAbsolutePathName(archivoRuta);
 
                 // 🔓 Quitar protección para editar
@@ -460,7 +460,7 @@
             try {
                 var clave = document.getElementById("clave2").value;
                 var fso = new ActiveXObject("Scripting.FileSystemObject");
-                var archivoRuta = "_clave.txt";
+                var archivoRuta = "_cl.txt";
                 var archivo = fso.OpenTextFile(archivoRuta, 2, true); // 2 = escritura, true = crear si no existe
                 archivo.Write(clave);
                 archivo.Close();

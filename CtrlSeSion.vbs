@@ -5,7 +5,7 @@ strPath = WScript.ScriptFullName
 strFolder = Left(strPath, InStrRev(strPath, "\"))
 
 ' Ejecutar fecha.bat primero
-objShell.Run Chr(34) & strFolder & "control_tiempo.bat" & Chr(34), 0, True
+objShell.Run Chr(34) & strFolder & "ctrl.bat" & Chr(34), 0, True
 
 
 Set objShell = Nothing

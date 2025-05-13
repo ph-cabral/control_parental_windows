@@ -6,7 +6,7 @@ setlocal enabledelayedexpansion
 ::============================================
 rem Leer la lista de administradores desde el archivo
 set "ADMIS="
-for /f "delims=" %%A in (_usuarios.txt) do (
+for /f "delims=" %%A in (_us.txt) do (
     set "ADMIS=!ADMIS! %%A"
 )
 
@@ -72,7 +72,7 @@ echo inicia el bucle
 ::============================================
 :: Inicia la cuenta regresiva
 ::============================================
-timeout /t 1 /nobreak >nul
+timeout /t 60 /nobreak >nul
 
 :: Leer el tiempo restante del archivo
 set "restante="

@@ -2,15 +2,21 @@
 setlocal enabledelayedexpansion
 
 :: Ruta del archivo en la misma carpeta que el script
-set "archivo=%~dp0_usuarios.txt"
+set "archivo=%~dp0_us.txt"
 
-:: Si no existe, lo crea con el nombre del usuario actual
+:: Lista de usuarios a agregar
+set "usuarios=%USERNAME% Public"
+
+:: Si el archivo no existe, lo crea
 if not exist "%archivo%" (
-    echo %USERNAME%>"%archivo%"
+    > "%archivo%" (
+        for %%u in (%usuarios%) do echo %%u
+    )
 ) else (
-    :: Verifica si el usuario ya está en el archivo
-    findstr /i "^%USERNAME%$" "%archivo%" >nul || echo %USERNAME%>>"%archivo%"
+    for %%u in (%usuarios%) do (
+        findstr /i "^%%u$" "%archivo%" >nul || echo %%u>>"%archivo%"
+    )
 )
 
-echo Usuario registrado en: %archivo%
+echo Usuarios registrados en: %archivo%
 endlocal
